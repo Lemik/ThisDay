@@ -1,0 +1,19 @@
+[
+  {
+    "id": "marcus-default",
+    "monthDay": "01-01",
+    "text": "You have power over your mind — not outside events. Realize this, and you will find strength.",
+    "author": "Marcus Aurelius"
+  },
+  {
+    "id": "seneca-any",
+    "text": "It is not that we have a short time to live, but that we waste a lot of it.",
+    "author": "Seneca"
+  },
+  {
+    "id": "curie-may06",
+    "monthDay": "05-06",
+    "text": "Nothing in life is to be feared; it is only to be understood.",
+    "author": "Marie Curie"
+  }
+]

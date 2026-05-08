@@ -1,0 +1,7 @@
+{
+  "05-06": [
+    { "year": 1889, "text": "The Eiffel Tower opened.", "url": "https://en.wikipedia.org/wiki/Eiffel_Tower" },
+    { "year": 1937, "text": "The Hindenburg airship erupted in flames in New Jersey.", "url": "https://en.wikipedia.org/wiki/Hindenburg_disaster" }
+  ],
+  "default": [{ "year": "—", "text": "Add more dated entries keyed as MM-DD, or browse Wikipedia for today's feed.", "url": "https://en.wikipedia.org/wiki/Main_Page" }]
+}

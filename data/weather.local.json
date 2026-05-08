@@ -1,0 +1,17 @@
+{
+  "label": "Offline sample (Brooklyn)",
+  "latitude": 40.6782,
+  "longitude": -73.9442,
+  "currentTempC": 18,
+  "currentCode": 2,
+  "daily": [
+    { "date": "2026-05-06", "maxC": 21, "minC": 14, "code": 2 },
+    { "date": "2026-05-07", "maxC": 19, "minC": 13, "code": 61 },
+    { "date": "2026-05-08", "maxC": 22, "minC": 15, "code": 0 },
+    { "date": "2026-05-09", "maxC": 24, "minC": 16, "code": 1 },
+    { "date": "2026-05-10", "maxC": 23, "minC": 17, "code": 3 },
+    { "date": "2026-05-11", "maxC": 20, "minC": 14, "code": 80 },
+    { "date": "2026-05-12", "maxC": 21, "minC": 13, "code": 2 },
+    { "date": "2026-05-13", "maxC": 22, "minC": 14, "code": 0 }
+  ]
+}

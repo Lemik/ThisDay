@@ -1,0 +1,15 @@
+[
+  {
+    "id": "earth-core",
+    "question": "What is the Earth's inner core primarily made of?",
+    "correctAnswer": "Iron and nickel",
+    "incorrectAnswers": ["Gold and silver", "Solid water", "Magma cakes"]
+  },
+  {
+    "id": "speed-light",
+    "monthDay": "05-06",
+    "question": "Which travels faster in a vacuum?",
+    "correctAnswer": "Light",
+    "incorrectAnswers": ["Sound", "A thrown baseball", "A shout"]
+  }
+]

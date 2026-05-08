@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>This Day — Morning dashboard</title>
+    <script>
+      (function () {
+        try {
+          var v = localStorage.getItem("thisday-theme");
+          if (v === "light" || v === "dark" || v === "auto") {
+            document.documentElement.setAttribute("data-theme", v);
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="top-actions" aria-label="Page tools">
+      <button
+        type="button"
+        class="top-actions__btn url-help-trigger"
+        id="url-help-trigger"
+        aria-haspopup="dialog"
+        aria-controls="url-help-dialog"
+        aria-expanded="false"
+        aria-label="URL parameters reference"
+        title="URL parameters"
+      >
+        <svg
+          class="top-actions__icon"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 16v-1M12 8v5" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="top-actions__btn theme-toggle"
+        id="theme-toggle"
+        aria-live="polite"
+        aria-label="Appearance: System. Activate to switch to Light."
+        title="Switch to Light"
+      >
+        <svg
+          class="theme-toggle__icon"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <circle cx="12" cy="12" r="3.75" />
+          <path d="M12 1.75v2.35M12 19.9v2.35M4.53 4.53l1.67 1.67M17.8 17.8l1.67 1.67M1.75 12h2.35M19.9 12h2.35M4.53 19.47l1.67-1.67M17.8 6.2l1.67-1.67" />
+        </svg>
+      </button>
+    </div>
+    <header class="site-header">
+      <div class="site-header__titles">
+        <h1 id="site-heading">This Day</h1>
+        <p class="tagline" id="site-tagline">Start the day with something interesting</p>
+      </div>
+    </header>
+
+    <main id="main" class="layout">
+      <section class="card card--hero" aria-labelledby="today-heading">
+        <h1 class="hero-date" id="today-date" data-state="loading">Loading date…</h1>
+      </section>
+
+      <section class="card" aria-labelledby="weather-heading" data-section="weather">
+        <div class="card__head">
+          <h2 id="weather-heading" class="card__title">Weather</h2>
+          <div class="card__toolbar">
+            <span class="card__source" data-source-label hidden></span>
+            <button
+              type="button"
+              class="card-icon-btn"
+              data-retry
+              hidden
+              aria-label="Retry loading weather"
+              title="Retry"
+            >
+              <svg
+                class="card-icon-btn__icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M8 16H3v5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="card__body" data-body>
+          <p class="muted" data-state="loading">Loading weather…</p>
+        </div>
+        <p class="card__error" data-error hidden></p>
+      </section>
+
+      <section class="card" aria-labelledby="quote-heading" data-section="quote">
+        <div class="card__head">
+          <h2 id="quote-heading" class="card__title">Philosophical quote</h2>
+          <div class="card__toolbar">
+            <span class="card__source" data-source-label hidden></span>
+            <button
+              type="button"
+              class="card-icon-btn"
+              data-refresh
+              aria-label="Load another quote"
+              title="Another quote"
+            >
+              <svg
+                class="card-icon-btn__icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M8 16H3v5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <blockquote class="card__body quote" data-body>
+          <p class="muted" data-state="loading">Loading…</p>
+        </blockquote>
+        <p class="card__error" data-error hidden></p>
+      </section>
+
+      <section class="card" aria-labelledby="dad-heading" data-section="dadJoke">
+        <div class="card__head">
+          <h2 id="dad-heading" class="card__title">Dad joke</h2>
+          <div class="card__toolbar">
+            <span class="card__source" data-source-label hidden></span>
+            <button
+              type="button"
+              class="card-icon-btn"
+              data-refresh
+              aria-label="Load another joke"
+              title="Another joke"
+            >
+              <svg
+                class="card-icon-btn__icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M8 16H3v5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="card__body" data-body>
+          <p class="muted" data-state="loading">Loading…</p>
+        </div>
+        <p class="card__error" data-error hidden></p>
+      </section>
+
+      <section class="card" aria-labelledby="morning-heading" data-section="morningIdea">
+        <div class="card__head">
+          <h2 id="morning-heading" class="card__title">Morning idea</h2>
+          <div class="card__toolbar">
+            <span class="card__source" data-source-label hidden></span>
+            <button
+              type="button"
+              class="card-icon-btn"
+              data-refresh
+              aria-label="Load another morning idea"
+              title="New idea"
+            >
+              <svg
+                class="card-icon-btn__icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M8 16H3v5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="card__body" data-body>
+          <p class="muted" data-state="loading">Loading…</p>
+        </div>
+        <p class="card__error" data-error hidden></p>
+      </section>
+
+      <section class="card" aria-labelledby="fact-heading" data-section="funFact">
+        <div class="card__head">
+          <h2 id="fact-heading" class="card__title">Fun fact</h2>
+          <div class="card__toolbar">
+            <span class="card__source" data-source-label hidden></span>
+            <button
+              type="button"
+              class="card-icon-btn"
+              data-refresh
+              aria-label="Load another fun fact"
+              title="Another fact"
+            >
+              <svg
+                class="card-icon-btn__icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M8 16H3v5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="card__body" data-body>
+          <p class="muted" data-state="loading">Loading…</p>
+        </div>
+        <p class="card__error" data-error hidden></p>
+      </section>
+
+      <section class="card" aria-labelledby="history-heading" data-section="history">
+        <div class="card__head">
+          <h2 id="history-heading" class="card__title">This day in history</h2>
+          <div class="card__toolbar">
+            <span class="card__source" data-source-label hidden></span>
+            <button
+              type="button"
+              class="card-icon-btn"
+              data-refresh
+              aria-label="Show another historical highlight"
+              title="Another highlight"
+            >
+              <svg
+                class="card-icon-btn__icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M8 16H3v5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="card__body" data-body>
+          <p class="muted" data-state="loading">Loading…</p>
+        </div>
+        <p class="card__error" data-error hidden></p>
+      </section>
+
+      <section class="card" aria-labelledby="quiz-heading" data-section="quiz">
+        <div class="card__head">
+          <h2 id="quiz-heading" class="card__title">Daily quiz</h2>
+          <div class="card__toolbar">
+            <span class="card__source" data-source-label hidden></span>
+            <button
+              type="button"
+              class="card-icon-btn"
+              data-refresh
+              aria-label="Load another quiz question"
+              title="New question"
+            >
+              <svg
+                class="card-icon-btn__icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M8 16H3v5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="card__body quiz" data-body>
+          <p class="muted" data-state="loading">Loading…</p>
+        </div>
+        <div class="quiz__actions">
+          <button type="button" class="btn btn--primary" data-reveal-answer hidden>Reveal answer</button>
+        </div>
+        <p class="card__hint muted" data-quiz-hint hidden></p>
+        <p class="card__error" data-error hidden></p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Geolocation (for weather API) is optional; coordinates go to Open‑Meteo for forecasts, and to
+        BigDataCloud’s free reverse‑geocode lookup for the location line. Set defaults in
+        <code>config.js</code> and toggle each section via <code>content-sources.json</code>. Use URL
+        query parameters to hide cards (circle help button next to theme) — e.g. <code>?w=off</code> turns
+        off weather.
+      </p>
+    </footer>
+
+    <dialog id="url-help-dialog" class="url-help-dialog" aria-labelledby="url-help-heading">
+      <div class="url-help-dialog__panel">
+        <header class="url-help-dialog__header">
+          <h2 id="url-help-heading" class="url-help-dialog__title">URL parameters</h2>
+          <button
+            type="button"
+            class="url-help-dialog__close"
+            data-url-help-close
+            aria-label="Close help"
+          >
+            ×
+          </button>
+        </header>
+        <div class="url-help-dialog__body">
+          <p>
+            Query parameters use <strong>case-insensitive</strong> names (e.g. <code>W=off</code> and
+            <code>w=off</code> are the same). Underscores are ignored (<code>dad_joke=off</code> works).
+          </p>
+
+          <h3 class="url-help-dialog__subhead">Header text</h3>
+          <p class="muted">
+            Set plain text (URL-encode spaces and special characters), or hide a line with an
+            <strong>off</strong>-style value (<code>off</code>, <code>hide</code>, <code>false</code>, …)
+            — same vocabulary as disabling widgets below. Overrides update the browser tab title; if both lines
+            are hidden, the whole site header collapses.
+          </p>
+          <table class="url-help-table">
+            <thead>
+              <tr>
+                <th scope="col">Parameters</th>
+                <th scope="col">Replaces</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>title</code>, <code>heading</code>, <code>h1</code>, <code>name</code></td>
+                <td>“This Day” heading</td>
+              </tr>
+              <tr>
+                <td><code>tagline</code>, <code>subtitle</code>, <code>desc</code>, <code>description</code></td>
+                <td>Line under the heading</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 class="url-help-dialog__subhead">Hide widgets</h3>
+          <p class="muted">These only take effect when the value means <strong>off</strong> (<code>off</code>, <code>0</code>, <code>false</code>, <code>no</code>, <code>hide</code>, <code>disable</code>, …).</p>
+          <table class="url-help-table">
+            <thead>
+              <tr>
+                <th scope="col">Parameters</th>
+                <th scope="col">Widget hidden</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>w</code>, <code>weather</code></td>
+                <td>Weather</td>
+              </tr>
+              <tr>
+                <td><code>q</code>, <code>quote</code></td>
+                <td>Philosophical quote</td>
+              </tr>
+              <tr>
+                <td><code>dj</code>, <code>dad</code>, <code>dadjoke</code></td>
+                <td>Dad joke</td>
+              </tr>
+              <tr>
+                <td><code>m</code>, <code>morning</code>, <code>idea</code>, <code>morningidea</code></td>
+                <td>Morning idea</td>
+              </tr>
+              <tr>
+                <td><code>f</code>, <code>fun</code>, <code>fact</code>, <code>funfact</code></td>
+                <td>Fun fact</td>
+              </tr>
+              <tr>
+                <td><code>h</code>, <code>history</code></td>
+                <td>This day in history</td>
+              </tr>
+              <tr>
+                <td><code>z</code>, <code>quiz</code>, <code>trivia</code></td>
+                <td>Daily quiz</td>
+              </tr>
+              <tr>
+                <td><code>today</code>, <code>hero</code>, <code>date</code></td>
+                <td>“Today” date card at the top</td>
+              </tr>
+            </tbody>
+          </table>
+          <h3 class="url-help-dialog__subhead">Examples</h3>
+          <p class="muted">Copy or bookmark using your current page path (hash is preserved if you add it before <code>?</code>):</p>
+          <pre class="url-help-examples" id="url-help-examples" tabindex="0"></pre>
+          <ul class="url-help-muted-list muted">
+            <li><code>?title=off</code>, <code>?tagline=off</code>, <code>?title=off&amp;subtitle=hide</code> — hide heading and/or tagline</li>
+            <li><code>?title=Good%20Morning&amp;tagline=Rise%20and%20shine</code> — custom header</li>
+            <li><code>?w=off</code> — weather only hidden</li>
+            <li><code>?Weather=off</code> — same</li>
+            <li><code>?w=off&amp;quote=off&amp;quiz=off</code> — several cards off</li>
+            <li><code>?today=off&amp;weather=off</code> — date strip and weather off</li>
+          </ul>
+          <p class="muted url-help-note">
+            Hidden sections are removed from layout and never load APIs or JSON for that widget.
+          </p>
+        </div>
+      </div>
+    </dialog>
+
+    <script src="config.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

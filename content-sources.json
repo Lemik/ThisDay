@@ -1,0 +1,37 @@
+{
+  "weather": {
+    "source": "api",
+    "localPick": "random",
+    "localPath": "data/weather.local.json"
+  },
+  "quote": {
+    "source": "local",
+    "localPick": "random",
+    "localPath": "data/quotes.local.json"
+  },
+  "dadJoke": {
+    "source": "api",
+    "localPick": "random",
+    "localPath": "data/dad-jokes.local.json"
+  },
+  "morningIdea": {
+    "source": "local",
+    "localPick": "byDate",
+    "localPath": "data/morning-ideas.local.json"
+  },
+  "funFact": {
+    "source": "api",
+    "localPick": "random",
+    "localPath": "data/funfacts.local.json"
+  },
+  "history": {
+    "source": "api",
+    "localPick": "random",
+    "localPath": "data/history.local.json"
+  },
+  "quiz": {
+    "source": "api",
+    "localPick": "random",
+    "localPath": "data/quiz.local.json"
+  }
+}
