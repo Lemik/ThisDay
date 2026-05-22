@@ -113,29 +113,29 @@
       </button>
     </div>
     <header class="site-header">
-      <div class="site-header__titles">
-        <h1 id="site-heading">This Day</h1>
+      <div class="site-header__inner">
+        <div class="site-header__top">
+          <h1 id="site-heading">This Day</h1>
+          <time class="site-header__date hero-date" id="today-date" data-state="loading"
+            >Loading date…</time
+          >
+        </div>
         <p class="tagline" id="site-tagline">Start the day with something interesting</p>
       </div>
     </header>
 
     <main id="main" class="layout">
-      <section class="card card--hero" aria-labelledby="today-heading">
-        <h1 class="hero-date" id="today-date" data-state="loading">Loading date…</h1>
-      </section>
-
-      <section class="card" aria-labelledby="weather-heading" data-section="weather">
+      <section class="card card--wide" aria-labelledby="weather-heading" data-section="weather">
         <div class="card__head">
           <h2 id="weather-heading" class="card__title">Weather</h2>
           <div class="card__toolbar">
-            <span class="card__source" data-source-label hidden></span>
             <button
               type="button"
               class="card-icon-btn"
               data-retry
               hidden
               aria-label="Retry loading weather"
-              title="Retry"
+              data-base-title="Retry"
             >
               <svg
                 class="card-icon-btn__icon"
@@ -165,15 +165,14 @@
 
       <section class="card" aria-labelledby="quote-heading" data-section="quote">
         <div class="card__head">
-          <h2 id="quote-heading" class="card__title">Philosophical quote</h2>
+          <h2 id="quote-heading" class="card__title">Quote</h2>
           <div class="card__toolbar">
-            <span class="card__source" data-source-label hidden></span>
             <button
               type="button"
               class="card-icon-btn"
               data-refresh
               aria-label="Load another quote"
-              title="Another quote"
+              data-base-title="Another quote"
             >
               <svg
                 class="card-icon-btn__icon"
@@ -205,13 +204,12 @@
         <div class="card__head">
           <h2 id="dad-heading" class="card__title">Dad joke</h2>
           <div class="card__toolbar">
-            <span class="card__source" data-source-label hidden></span>
             <button
               type="button"
               class="card-icon-btn"
               data-refresh
               aria-label="Load another joke"
-              title="Another joke"
+              data-base-title="Another joke"
             >
               <svg
                 class="card-icon-btn__icon"
@@ -243,13 +241,12 @@
         <div class="card__head">
           <h2 id="morning-heading" class="card__title">Morning idea</h2>
           <div class="card__toolbar">
-            <span class="card__source" data-source-label hidden></span>
             <button
               type="button"
               class="card-icon-btn"
               data-refresh
               aria-label="Load another morning idea"
-              title="New idea"
+              data-base-title="New idea"
             >
               <svg
                 class="card-icon-btn__icon"
@@ -279,15 +276,14 @@
 
       <section class="card" aria-labelledby="smalltalk-heading" data-section="smallTalk">
         <div class="card__head">
-          <h2 id="smalltalk-heading" class="card__title">Small talk idea</h2>
+          <h2 id="smalltalk-heading" class="card__title">Small talk</h2>
           <div class="card__toolbar">
-            <span class="card__source" data-source-label hidden></span>
             <button
               type="button"
               class="card-icon-btn"
               data-refresh
               aria-label="Load another small talk idea"
-              title="Another prompt"
+              data-base-title="Another prompt"
             >
               <svg
                 class="card-icon-btn__icon"
@@ -319,13 +315,12 @@
         <div class="card__head">
           <h2 id="fact-heading" class="card__title">Fun fact</h2>
           <div class="card__toolbar">
-            <span class="card__source" data-source-label hidden></span>
             <button
               type="button"
               class="card-icon-btn"
               data-refresh
               aria-label="Load another fun fact"
-              title="Another fact"
+              data-base-title="Another fact"
             >
               <svg
                 class="card-icon-btn__icon"
@@ -353,17 +348,16 @@
         <p class="card__error" data-error hidden></p>
       </section>
 
-      <section class="card" aria-labelledby="history-heading" data-section="history">
+      <section class="card card--wide" aria-labelledby="history-heading" data-section="history">
         <div class="card__head">
-          <h2 id="history-heading" class="card__title">This day in history</h2>
+          <h2 id="history-heading" class="card__title">On this day</h2>
           <div class="card__toolbar">
-            <span class="card__source" data-source-label hidden></span>
             <button
               type="button"
               class="card-icon-btn"
               data-refresh
-              aria-label="Show another historical highlight"
-              title="Another highlight"
+              aria-label="Show more historical highlights"
+              data-base-title="More highlights"
             >
               <svg
                 class="card-icon-btn__icon"
@@ -391,17 +385,16 @@
         <p class="card__error" data-error hidden></p>
       </section>
 
-      <section class="card" aria-labelledby="quiz-heading" data-section="quiz">
+      <section class="card card--wide" aria-labelledby="quiz-heading" data-section="quiz">
         <div class="card__head">
           <h2 id="quiz-heading" class="card__title">Daily quiz</h2>
           <div class="card__toolbar">
-            <span class="card__source" data-source-label hidden></span>
             <button
               type="button"
               class="card-icon-btn"
               data-refresh
               aria-label="Load another quiz question"
-              title="New question"
+              data-base-title="New question"
             >
               <svg
                 class="card-icon-btn__icon"
@@ -559,10 +552,19 @@
               </tr>
               <tr>
                 <td><code>today</code>, <code>hero</code>, <code>date</code></td>
-                <td>“Today” date card at the top</td>
+                <td>Date beside the page title</td>
               </tr>
             </tbody>
           </table>
+
+          <h3 class="url-help-dialog__subhead">Weather location</h3>
+          <p class="muted">
+            The weather widget uses your browser’s location to show the forecast for where you open
+            this page. Allow <strong>location permission</strong> when prompted, or turn it on in your
+            browser’s site settings for this site. If location is denied or unavailable, weather falls
+            back to the default coordinates in <code>config.js</code>.
+          </p>
+
           <h3 class="url-help-dialog__subhead">Examples</h3>
           <p class="muted">Copy or bookmark using your current page path (hash is preserved if you add it before <code>?</code>):</p>
           <pre class="url-help-examples" id="url-help-examples" tabindex="0"></pre>

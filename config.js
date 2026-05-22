@@ -3,6 +3,6 @@
  * Edit to your home area. See config.example.js.
  */
 window.THISDAY_CONFIG = {
-  defaultLatitude: 40.7128,
-  defaultLongitude: -74.006,
+  defaultLatitude: 49.1659,
+  defaultLongitude: -123.9401,
 };

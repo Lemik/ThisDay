@@ -39,7 +39,7 @@ const SECTION_SELECTORS = {
   funfact: '[data-section="funFact"]',
   history: '[data-section="history"]',
   quiz: '[data-section="quiz"]',
-  hero: ".card--hero",
+  hero: "#today-date",
 };
 
 function normalizeUrlQueryKey(raw) {
@@ -309,6 +309,38 @@ function shuffleInPlace(arr) {
   return arr;
 }
 
+const HISTORY_DISPLAY_COUNT = 5;
+
+/** @param {unknown} raw */
+function flattenHistoryLocal(raw) {
+  if (Array.isArray(raw)) return raw.filter(Boolean);
+  if (raw && typeof raw === "object") {
+    const flat = [];
+    for (const v of Object.values(raw)) {
+      if (Array.isArray(v)) flat.push(...v.filter(Boolean));
+      else if (v) flat.push(v);
+    }
+    return flat;
+  }
+  return [];
+}
+
+/** @param {unknown[]} events @param {number} count @param {boolean} randomPick */
+function selectHistoryEvents(events, count, randomPick) {
+  const list = events.filter(Boolean);
+  if (!list.length) return [];
+  const n = Math.min(count, list.length);
+  if (randomPick) return shuffleInPlace([...list]).slice(0, n);
+  return [...list]
+    .sort((a, b) => {
+      const ya = Number(a?.year ?? a?.years);
+      const yb = Number(b?.year ?? b?.years);
+      if (Number.isFinite(ya) && Number.isFinite(yb)) return yb - ya;
+      return 0;
+    })
+    .slice(0, n);
+}
+
 /**
  * Normalize local JSON payloads (array vs keyed object) into picked item(s).
  * @param {unknown} raw
@@ -410,9 +442,8 @@ async function loadContentSources() {
 function getSectionEls(root) {
   const body = root.querySelector("[data-body]");
   const errEl = /** @type {HTMLParagraphElement} */ (root.querySelector("[data-error]"));
-  const sourceLabel = root.querySelector("[data-source-label]");
   const retry = /** @type {HTMLButtonElement | null} */ (root.querySelector("[data-retry]"));
-  return { body, errEl, sourceLabel, retry };
+  return { body, errEl, retry };
 }
 
 function showError(sectionRoot, msg) {
@@ -435,10 +466,17 @@ function clearError(sectionRoot) {
 }
 
 function setSourceBadge(sectionRoot, source) {
-  const { sourceLabel } = getSectionEls(sectionRoot);
-  if (!sourceLabel) return;
-  sourceLabel.hidden = false;
-  sourceLabel.textContent = source === "local" ? "Local JSON" : "API";
+  const btn = /** @type {HTMLButtonElement | null} */ (
+    sectionRoot.querySelector("[data-refresh], [data-retry]")
+  );
+  if (!btn) return;
+  const base = btn.getAttribute("data-base-title") || btn.getAttribute("title") || "";
+  if (base && !btn.hasAttribute("data-base-title")) {
+    btn.setAttribute("data-base-title", base);
+  }
+  const sourceLabel = source === "local" ? "Local JSON" : "API";
+  const action = btn.getAttribute("data-base-title") || base;
+  btn.title = action ? `${action} · ${sourceLabel}` : sourceLabel;
 }
 
 async function reverseGeocodePlace(lat, lon) {
@@ -493,6 +531,14 @@ function renderWeatherApi(sectionRoot, coords) {
   });
 }
 
+/** @param {string} isoDate @param {number} index */
+function formatForecastDayLabel(isoDate, index) {
+  if (index === 0) return "Today";
+  const d = new Date(`${isoDate}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return isoDate;
+  return new Intl.DateTimeFormat("en", { weekday: "short" }).format(d);
+}
+
 /** @param {HTMLElement} sectionRoot */
 function renderWeatherMarkup(sectionRoot, payload, coordsLabel) {
   const { body } = getSectionEls(sectionRoot);
@@ -522,12 +568,12 @@ function renderWeatherMarkup(sectionRoot, payload, coordsLabel) {
       : null;
 
   const headline = named ?? coordsLine ?? "Selected location";
-  const subline =
+  const coordsSuffix =
     named && coordsLine
-      ? `<p class="weather-coords muted">${decodeHtmlEntities(coordsLine)}</p>`
+      ? `<span class="weather-coords muted">${decodeHtmlEntities(coordsLine)}</span>`
       : "";
 
-  let html = `<p class="weather-location">${decodeHtmlEntities(headline)}</p>${subline}`;
+  let html = `<div class="weather-head"><span class="weather-location">${decodeHtmlEntities(headline)}</span>${coordsSuffix}</div>`;
   html += `<div class="weather-now"><span class="weather-temp">${
     temp != null ? `${Math.round(temp)}°C` : "—"
   }</span>`;
@@ -535,12 +581,13 @@ function renderWeatherMarkup(sectionRoot, payload, coordsLabel) {
   html += `<div class="weather-grid">`;
   const n = Math.min(8, daily.time.length);
   for (let i = 0; i < n; i += 1) {
-    const day = daily.time[i];
+    const day = formatForecastDayLabel(daily.time[i], i);
     const max = daily.temperature_2m_max?.[i];
     const min = daily.temperature_2m_min?.[i];
     const wc = daily.weather_code?.[i] ?? "";
     html += `<div class="weather-cell"><strong>${day}</strong>`;
-    html += `${WMO[wc] ?? ""}<br>${max != null ? Math.round(max) : "—"}° / ${min != null ? Math.round(min) : "—"}°C`;
+    html += `<span class="weather-cell__desc">${WMO[wc] ?? ""}</span>`;
+    html += `<span class="weather-cell__range">${max != null ? Math.round(max) : "—"}° / ${min != null ? Math.round(min) : "—"}°</span>`;
     html += `</div>`;
   }
   html += "</div>";
@@ -762,13 +809,27 @@ async function hydrateHistory(sectionRoot, cfg, monthDay, isRefresh = false) {
   body.innerHTML = `<p class="muted" data-state="loading">Loading…</p>`;
   try {
     if (cfg.source === "local") {
-      const picked = await loadLocalPickItem(
-        cfg,
-        monthDay,
-        isRefresh ? "random" : undefined
-      );
-      const events = Array.isArray(picked) ? picked : picked?.events ?? [picked];
-      body.innerHTML = renderHistoryList(events);
+      const raw = await fetchJson(cfg.localPath || DEFAULT_CONTENT_SOURCES.history.localPath);
+      const useRandom = isRefresh || cfg.localPick !== "byDate";
+      let pool;
+      if (useRandom) {
+        pool = flattenHistoryLocal(raw);
+      } else {
+        const picked = pickFromLocalJson(raw, "byDate", monthDay);
+        pool = Array.isArray(picked)
+          ? picked
+          : picked?.events
+            ? picked.events
+            : picked
+              ? [picked]
+              : [];
+      }
+      const items = selectHistoryEvents(pool, HISTORY_DISPLAY_COUNT, useRandom);
+      if (!items.length) {
+        body.innerHTML = `<p class="muted">No events found for this day.</p>`;
+        return;
+      }
+      body.innerHTML = renderHistoryList(items);
       return;
     }
     const [mm, dd] = monthDay.split("-").map((x) => parseInt(x, 10));
@@ -781,14 +842,8 @@ async function hydrateHistory(sectionRoot, cfg, monthDay, isRefresh = false) {
       body.innerHTML = `<p class="muted">No events found for this day.</p>`;
       return;
     }
-    const pick = events[Math.floor(Math.random() * events.length)];
-    body.innerHTML = renderHistoryList([
-      {
-        year: pick.year,
-        text: pick.text,
-        pages: pick.pages,
-      },
-    ]);
+    const items = selectHistoryEvents(events, HISTORY_DISPLAY_COUNT, true);
+    body.innerHTML = renderHistoryList(items);
   } catch (e) {
     showError(sectionRoot, e instanceof Error ? e.message : String(e));
   }
