@@ -448,6 +448,15 @@ html[data-theme="auto"] .top-actions__btn {
   background: var(--bg-elevated);
 }
 
+.site-footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  text-decoration: underline;
+}
+
 .history-item {
   margin: 0.5rem 0 0;
   padding-bottom: 0.5rem;
