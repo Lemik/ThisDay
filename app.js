@@ -92,6 +92,8 @@ function isSectionUrlEnabled(el) {
 
 const URL_HEADER_TITLE_KEYS = ["title", "heading", "h1", "name"];
 const URL_HEADER_TAGLINE_KEYS = ["tagline", "subtitle", "desc", "description"];
+const URL_PARK_KEYS = ["park", "themepark", "movie", "skin"];
+const URL_APPEARANCE_KEYS = ["appearance", "theme", "mode"];
 
 const URL_HEADER_TAGLINE_MAX = 200;
 const URL_HEADER_TITLE_MAX = 200;
@@ -116,6 +118,60 @@ function getUrlSearchParamsNormalizedMap() {
     m.set(normalizeUrlQueryKey(k), v);
   }
   return m;
+}
+
+function getUrlParamFromMap(paramMap, keys) {
+  for (const key of keys) {
+    const nk = normalizeUrlQueryKey(key);
+    if (paramMap.has(nk)) return paramMap.get(nk);
+  }
+  return null;
+}
+
+function normalizeUrlQueryValue(raw) {
+  return String(raw).trim().toLowerCase().replace(/_/g, "").replace(/-/g, "");
+}
+
+function resolveUrlParkPreference(raw) {
+  if (raw == null || String(raw).trim() === "") return null;
+  const v = normalizeUrlQueryValue(raw);
+  /** @type {Record<string, string>} */
+  const aliases = {
+    default: "default",
+    classic: "default",
+    normal: "default",
+    starwars: "star-wars",
+    sw: "star-wars",
+    wars: "star-wars",
+    matrix: "matrix",
+    backtothefuture: "back-to-future",
+    bttf: "back-to-future",
+    future: "back-to-future",
+    random: "random",
+    rand: "random",
+    daily: "random",
+  };
+  return aliases[v] ?? null;
+}
+
+function resolveUrlAppearanceValue(raw) {
+  if (raw == null || String(raw).trim() === "") return null;
+  const v = normalizeUrlQueryValue(raw);
+  if (["auto", "system", "default"].includes(v)) return "auto";
+  if (v === "light") return "light";
+  if (v === "dark") return "dark";
+  return null;
+}
+
+function getUrlThemeOverrides() {
+  const paramMap = getUrlSearchParamsNormalizedMap();
+  const parkRaw = getUrlParamFromMap(paramMap, URL_PARK_KEYS);
+  const appearanceRaw = getUrlParamFromMap(paramMap, URL_APPEARANCE_KEYS);
+  return {
+    park: parkRaw != null ? resolveUrlParkPreference(parkRaw) : null,
+    appearance:
+      appearanceRaw != null ? resolveUrlAppearanceValue(appearanceRaw) : null,
+  };
 }
 
 /**
@@ -907,51 +963,50 @@ function wireRefresh(root, fn) {
   if (btn) btn.addEventListener("click", fn);
 }
 
-const THEME_STORAGE_KEY = "thisday-theme";
-const THEME_CYCLE = /** @type {const} */ (["auto", "light", "dark"]);
+const THEME_MODES = /** @type {const} */ (["auto", "light", "dark"]);
 
-function initThemeToggle() {
-  const btn = document.getElementById("theme-toggle");
-  if (!btn) return;
+const PARK_THEMES = /** @type {const} */ ([
+  "default",
+  "star-wars",
+  "matrix",
+  "back-to-future",
+]);
 
-  function labelFor(mode) {
-    switch (mode) {
-      case "light":
-        return "Light";
-      case "dark":
-        return "Dark";
-      default:
-        return "System";
-    }
+function getDailyRandomPark(date = new Date()) {
+  const key = date.toISOString().slice(0, 10);
+  let hash = 0;
+  for (let i = 0; i < key.length; i += 1) {
+    hash = (Math.imul(31, hash) + key.charCodeAt(i)) >>> 0;
   }
+  return PARK_THEMES[hash % PARK_THEMES.length];
+}
 
-  function syncLabel() {
-    const raw = document.documentElement.getAttribute("data-theme") || "auto";
-    const current = THEME_CYCLE.includes(raw) ? raw : "auto";
-    const idx = THEME_CYCLE.indexOf(current);
-    const next = THEME_CYCLE[(idx + 1) % THEME_CYCLE.length];
-    btn.setAttribute(
-      "aria-label",
-      `Appearance: ${labelFor(current)}. Activate to switch to ${labelFor(next)}.`
-    );
-    btn.title = `Switch to ${labelFor(next)}`;
+function resolveParkTheme(preference, date = new Date()) {
+  if (preference === "random") return getDailyRandomPark(date);
+  return PARK_THEMES.includes(preference) ? preference : "default";
+}
+
+function applyResolvedPark(resolved) {
+  if (resolved === "default") {
+    document.documentElement.removeAttribute("data-park");
+  } else {
+    document.documentElement.setAttribute("data-park", resolved);
   }
+}
 
-  syncLabel();
+function applyUrlThemeOverrides() {
+  const { park, appearance } = getUrlThemeOverrides();
+  const parkPref = park ?? "default";
+  applyResolvedPark(resolveParkTheme(parkPref));
 
-  btn.addEventListener("click", () => {
-    const raw = document.documentElement.getAttribute("data-theme") || "auto";
-    const current = THEME_CYCLE.includes(raw) ? raw : "auto";
-    const next =
-      THEME_CYCLE[(THEME_CYCLE.indexOf(current) + 1) % THEME_CYCLE.length];
-    document.documentElement.setAttribute("data-theme", next);
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, next);
-    } catch (_) {
-      /* private mode etc. */
-    }
-    syncLabel();
-  });
+  const resolved = resolveParkTheme(parkPref);
+  if (resolved !== "default") return;
+
+  const mode = appearance ?? "auto";
+  document.documentElement.setAttribute(
+    "data-theme",
+    THEME_MODES.includes(mode) ? mode : "auto"
+  );
 }
 
 function initUrlHelpDialog() {
@@ -981,7 +1036,12 @@ function initUrlHelpDialog() {
       `${base}?weather=off&quote=off`,
       `${base}?today=off&quiz=off&history=off`,
       "",
-      "Combine hide rules, header text, and theme in one URL with &.",
+      `${base}?park=matrix`,
+      `${base}?park=random`,
+      `${base}?appearance=dark`,
+      `${base}?park=star-wars&appearance=light`,
+      "",
+      "Combine hide rules, header text, themes, and appearance in one URL with &.",
     ].join("\n");
   }
 
@@ -1009,11 +1069,11 @@ async function main() {
   const urlDisabled = getUrlDisabledSections();
   applyUrlDisabledSections(urlDisabled);
   applyUrlHeaderOverrides();
+  applyUrlThemeOverrides();
+  initUrlHelpDialog();
 
   const today = new Date();
   const monthDay = getMonthDayKey(today);
-  initThemeToggle();
-  initUrlHelpDialog();
 
   const dateEl = document.getElementById("today-date");
   if (!urlDisabled.has("hero") && dateEl) {

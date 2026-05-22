@@ -48,6 +48,55 @@ html[data-theme="light"] {
   --page-glow-2: rgba(120, 100, 200, 0.07);
 }
 
+/* Theme park — movie-inspired skins (data-park on html) */
+html[data-park="star-wars"] {
+  color-scheme: dark;
+  --bg: #05060a;
+  --bg-elevated: #0c0f18;
+  --border: rgba(255, 232, 31, 0.18);
+  --text: #f5f0dc;
+  --muted: #b8ad8a;
+  --accent: #ffe81f;
+  --accent-soft: rgba(255, 232, 31, 0.14);
+  --danger: #ff6b4a;
+  --radius: 6px;
+  --font: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --page-glow-1: rgba(255, 232, 31, 0.1);
+  --page-glow-2: rgba(74, 144, 226, 0.08);
+}
+
+html[data-park="matrix"] {
+  color-scheme: dark;
+  --bg: #020804;
+  --bg-elevated: #041008;
+  --border: rgba(57, 255, 20, 0.16);
+  --text: #d7ffe0;
+  --muted: #6fbf7f;
+  --accent: #39ff14;
+  --accent-soft: rgba(57, 255, 20, 0.12);
+  --danger: #ff5555;
+  --radius: 4px;
+  --font: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --page-glow-1: rgba(57, 255, 20, 0.08);
+  --page-glow-2: rgba(0, 120, 40, 0.12);
+}
+
+html[data-park="back-to-future"] {
+  color-scheme: dark;
+  --bg: #120818;
+  --bg-elevated: #1a1024;
+  --border: rgba(255, 120, 200, 0.2);
+  --text: #fff4fb;
+  --muted: #c9a8d8;
+  --accent: #ff7a18;
+  --accent-soft: rgba(255, 122, 24, 0.16);
+  --danger: #ff4d8d;
+  --radius: 14px;
+  --font: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --page-glow-1: rgba(255, 122, 24, 0.14);
+  --page-glow-2: rgba(0, 210, 255, 0.1);
+}
+
 *,
 *::before,
 *::after {
@@ -142,10 +191,40 @@ body {
   flex-shrink: 0;
 }
 
-.theme-toggle__icon {
-  width: 1.3rem;
-  height: 1.3rem;
-  flex-shrink: 0;
+html[data-park="star-wars"] .site-header h1,
+html[data-park="star-wars"] .hero-date {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+html[data-park="matrix"] body {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(57, 255, 20, 0.03) 0,
+      rgba(57, 255, 20, 0.03) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(900px 500px at 15% -5%, var(--page-glow-1), transparent),
+    radial-gradient(700px 350px at 100% 0%, var(--page-glow-2), transparent),
+    var(--bg);
+}
+
+html[data-park="matrix"] .card__title,
+html[data-park="matrix"] .hero-date {
+  text-shadow: 0 0 12px rgba(57, 255, 20, 0.25);
+}
+
+html[data-park="back-to-future"] body {
+  background:
+    radial-gradient(900px 500px at 10% -10%, var(--page-glow-1), transparent),
+    radial-gradient(700px 400px at 95% 5%, var(--page-glow-2), transparent),
+    linear-gradient(160deg, #120818 0%, #1f0a2e 45%, #0a1428 100%);
+}
+
+html[data-park="back-to-future"] .card {
+  box-shadow: 0 0 0 1px rgba(0, 210, 255, 0.08), 0 8px 28px rgba(255, 80, 180, 0.08);
 }
 
 html[data-theme="dark"] .top-actions__btn,
@@ -173,7 +252,7 @@ html[data-theme="auto"] .top-actions__btn {
 
 @media (max-width: 32rem) {
   .site-header {
-    padding-inline-end: 7.35rem;
+    padding-inline-end: 4.5rem;
   }
 }
 

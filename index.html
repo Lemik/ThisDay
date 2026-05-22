@@ -6,10 +6,76 @@
     <title>This Day — Morning dashboard</title>
     <script>
       (function () {
+        function normalizeKey(k) {
+          return String(k).trim().toLowerCase().replace(/_/g, "");
+        }
+        function normalizeValue(v) {
+          return String(v).trim().toLowerCase().replace(/_/g, "").replace(/-/g, "");
+        }
+        function getUrlParam(keys) {
+          var sp = new URLSearchParams(window.location.search);
+          var wanted = {};
+          for (var i = 0; i < keys.length; i++) wanted[normalizeKey(keys[i])] = true;
+          for (var pair of sp.entries()) {
+            if (wanted[normalizeKey(pair[0])]) return pair[1];
+          }
+          return null;
+        }
+        function resolveUrlPark(raw) {
+          if (raw == null || String(raw).trim() === "") return null;
+          var v = normalizeValue(raw);
+          var map = {
+            default: "default",
+            classic: "default",
+            normal: "default",
+            starwars: "star-wars",
+            sw: "star-wars",
+            wars: "star-wars",
+            matrix: "matrix",
+            backtothefuture: "back-to-future",
+            bttf: "back-to-future",
+            future: "back-to-future",
+            random: "random",
+            rand: "random",
+            daily: "random",
+          };
+          return map[v] || null;
+        }
+        function resolveUrlAppearance(raw) {
+          if (raw == null || String(raw).trim() === "") return null;
+          var v = normalizeValue(raw);
+          if (v === "auto" || v === "system" || v === "default") return "auto";
+          if (v === "light" || v === "dark") return v;
+          return null;
+        }
+        function dailyRandomPark() {
+          var key = new Date().toISOString().slice(0, 10);
+          var themes = ["default", "star-wars", "matrix", "back-to-future"];
+          var hash = 0;
+          for (var i = 0; i < key.length; i++) {
+            hash = (Math.imul(31, hash) + key.charCodeAt(i)) >>> 0;
+          }
+          return themes[hash % themes.length];
+        }
+        function resolveParkPreference(preference) {
+          if (preference === "random") return dailyRandomPark();
+          return preference;
+        }
+        function applyResolvedPark(resolved) {
+          if (resolved !== "default") {
+            document.documentElement.setAttribute("data-park", resolved);
+          }
+        }
         try {
-          var v = localStorage.getItem("thisday-theme");
-          if (v === "light" || v === "dark" || v === "auto") {
-            document.documentElement.setAttribute("data-theme", v);
+          var urlAppearance = resolveUrlAppearance(
+            getUrlParam(["appearance", "theme", "mode"])
+          );
+          var urlPark = resolveUrlPark(getUrlParam(["park", "themepark", "movie", "skin"]));
+          var parkPref = urlPark || "default";
+          var resolvedPark = resolveParkPreference(parkPref);
+          applyResolvedPark(resolvedPark);
+          if (resolvedPark === "default") {
+            document.documentElement.setAttribute("data-theme", urlAppearance || "auto");
           }
         } catch (e) {}
       })();
@@ -43,30 +109,6 @@
         >
           <circle cx="12" cy="12" r="9" />
           <path d="M12 16v-1M12 8v5" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        class="top-actions__btn theme-toggle"
-        id="theme-toggle"
-        aria-live="polite"
-        aria-label="Appearance: System. Activate to switch to Light."
-        title="Switch to Light"
-      >
-        <svg
-          class="theme-toggle__icon"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.75"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <circle cx="12" cy="12" r="3.75" />
-          <path d="M12 1.75v2.35M12 19.9v2.35M4.53 4.53l1.67 1.67M17.8 17.8l1.67 1.67M1.75 12h2.35M19.9 12h2.35M4.53 19.47l1.67-1.67M17.8 6.2l1.67-1.67" />
         </svg>
       </button>
     </div>
@@ -444,6 +486,35 @@
             </tbody>
           </table>
 
+          <h3 class="url-help-dialog__subhead">Themes</h3>
+          <p class="muted">
+            Set movie themes and light/dark appearance via URL query parameters. Appearance applies
+            only when the resolved movie theme is Classic (including when
+            <code>park=random</code> picks Classic for the day).
+          </p>
+          <table class="url-help-table">
+            <thead>
+              <tr>
+                <th scope="col">Parameters</th>
+                <th scope="col">Values</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>park</code>, <code>movie</code>, <code>skin</code>, <code>themepark</code></td>
+                <td>
+                  <code>classic</code>, <code>star-wars</code> (<code>sw</code>),
+                  <code>matrix</code>, <code>back-to-future</code> (<code>bttf</code>),
+                  <code>random</code> (<code>daily</code>)
+                </td>
+              </tr>
+              <tr>
+                <td><code>appearance</code>, <code>theme</code>, <code>mode</code></td>
+                <td><code>auto</code> (system), <code>light</code>, <code>dark</code></td>
+              </tr>
+            </tbody>
+          </table>
+
           <h3 class="url-help-dialog__subhead">Hide widgets</h3>
           <p class="muted">These only take effect when the value means <strong>off</strong> (<code>off</code>, <code>0</code>, <code>false</code>, <code>no</code>, <code>hide</code>, <code>disable</code>, …).</p>
           <table class="url-help-table">
@@ -502,6 +573,10 @@
             <li><code>?Weather=off</code> — same</li>
             <li><code>?w=off&amp;quote=off&amp;quiz=off</code> — several cards off</li>
             <li><code>?today=off&amp;weather=off</code> — date strip and weather off</li>
+            <li><code>?park=matrix</code> — The Matrix movie theme</li>
+            <li><code>?park=random</code> — random movie theme (same pick all day)</li>
+            <li><code>?appearance=dark</code> — dark mode (Classic theme only)</li>
+            <li><code>?park=star-wars&amp;w=off</code> — Star Wars skin, weather hidden</li>
           </ul>
           <p class="muted url-help-note">
             Hidden sections are removed from layout and never load APIs or JSON for that widget.
