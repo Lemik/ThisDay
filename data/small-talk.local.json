@@ -1,0 +1,67 @@
+[
+  {
+    "id": "weekend-plan",
+    "idea": "Ask: “Anything you’re looking forward to this week—or glad is behind you?”"
+  },
+  {
+    "id": "food-easy",
+    "idea": "Ask: “Discovered any good eats lately—a café, snack, or recipe worth stealing?”"
+  },
+  {
+    "id": "commute",
+    "idea": "Ask: “How’s your commute treating you lately—same old or anything new?”"
+  },
+  {
+    "id": "micro-win",
+    "idea": "Ask: “What’s one small win you’ve had recently that nobody noticed but you?”"
+  },
+  {
+    "id": "reading-watch",
+    "idea": "Ask: “Watching or reading anything good—worth recommending or happily forgetting?”"
+  },
+  {
+    "id": "season",
+    "idea": "Ask: “Favorite thing about this time of year where you live?”"
+  },
+  {
+    "id": "travel-dream",
+    "idea": "Ask: “If you had a free weekend with zero logistics, where would you drift?”"
+  },
+  {
+    "id": "learn-skill",
+    "idea": "Ask: “Learning anything new lately—even tiny, like a keyboard shortcut or coffee tweak?”"
+  },
+  {
+    "id": "pet-plant",
+    "idea": "Ask: “Any pets, plants, or hobbies quietly taking over your apartment?”"
+  },
+  {
+    "id": "music-podcast",
+    "idea": "Ask: “What’s on repeat for you—song, podcast, or guilty playlist?”"
+  },
+  {
+    "id": "neighbor-city",
+    "idea": "Ask: “Anything changing in your neighborhood you’ve noticed—good or weird?”"
+  },
+  {
+    "id": "comfort-reboot",
+    "idea": "Ask: “What’s your low-effort comfort ritual after a long day?”"
+  },
+  {
+    "id": "meet-new",
+    "idea": "Ask: “Met anyone interesting recently—or reconnected with someone out of the blue?”"
+  },
+  {
+    "id": "gift-you",
+    "idea": "Ask: “Best thing someone’s recommended to you in the last month?”"
+  },
+  {
+    "id": "tiny-grumble",
+    "idea": "Bond lightly: “What’s your harmless pet peeve lately—like noisy keyboards or meetings that could’ve been an email?”"
+  },
+  {
+    "id": "may-daytrip",
+    "monthDay": "05-08",
+    "idea": "Ask: “Any spring plans kicking in—day trips, errands you’re pretending are adventures?”"
+  }
+]

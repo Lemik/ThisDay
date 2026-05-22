@@ -39,9 +39,23 @@ Open `http://localhost:8080` (or `/ThisDay/` if you use a subpath).
 
 ## Deploy on GitHub Pages
 
-1. Push this repository to GitHub.
-2. **Settings → Pages** → Source: **Deploy from a branch** → branch **`main`** (or default) → folder **`/ (root)`**.
-3. Adjust [`config.js`](config.js) if you want fixed map coordinates when visitors deny geolocation.
+1. Push this repository to GitHub (`main` branch, or whichever branch you publish from).
+2. In the repo on GitHub: **Settings → Pages** → **Build and deployment**.
+   - **Source**: **Deploy from a branch**
+   - **Branch**: your default branch (e.g. `main`) → **/ (root)**
+   - Save. After a minute or two, the site will be at `https://<username>.github.io/<repo>/` (for example `https://leoniddushin.github.io/ThisDay/`).
+3. **Custom domain (`day.dushyn.com`)**  
+   Still under **Pages** → **Custom domain**, enter **`day.dushyn.com`** and save. This repo includes a [`CNAME`](CNAME) file with that hostname so Pages keeps it in sync. Wait for GitHub’s **DNS check** to pass (can take minutes to hours while DNS spreads).
+4. **GoDaddy DNS** — for the subdomain only:
+   - **Type**: `CNAME`
+   - **Name / Host**: `day` (subdomain row only — **`@`** usually means the **root** apex, not **`day`**)
+   - **Points to / Value**: `<your-github-username>.github.io` (no `https://`, no trailing slash; example: `leoniddushin.github.io`)
+
+   TTL can stay default. Do **not** set this CNAME to the long `USERNAME.github.io/REPO` path — GitHub resolves the repo from your Pages project settings once the hostname hits `*.github.io`.
+5. After the domain verifies, enable **Enforce HTTPS** on the same Pages settings page (certificate may take up to ~24 hours the first time).
+6. Optionally adjust [`config.js`](config.js) for fixed map coordinates when visitors deny geolocation.
+
+**Repo URL vs custom domain**: All asset paths are relative, so the same deployment works both at `https://<user>.github.io/<repo>/` and at `https://day.dushyn.com/`.
 
 ## Configure content
 

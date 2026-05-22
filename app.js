@@ -12,6 +12,7 @@ const DEFAULT_CONTENT_SOURCES = {
   quote: { source: "local", localPick: "random", localPath: "data/quotes.local.json" },
   dadJoke: { source: "api", localPick: "random", localPath: "data/dad-jokes.local.json" },
   morningIdea: { source: "local", localPick: "byDate", localPath: "data/morning-ideas.local.json" },
+  smallTalk: { source: "local", localPick: "byDate", localPath: "data/small-talk.local.json" },
   funFact: { source: "api", localPick: "random", localPath: "data/funfacts.local.json" },
   history: { source: "api", localPick: "random", localPath: "data/history.local.json" },
   quiz: { source: "api", localPick: "random", localPath: "data/quiz.local.json" },
@@ -22,6 +23,7 @@ const URL_PARAM_ALIASES = {
   quote: ["q", "quote"],
   dadjoke: ["dj", "dad", "dadjoke"],
   morningidea: ["m", "morning", "idea", "morningidea"],
+  smalltalk: ["st", "smalltalk", "chitchat", "conversation"],
   funfact: ["f", "fun", "fact", "funfact"],
   history: ["h", "history"],
   quiz: ["z", "quiz", "trivia"],
@@ -33,6 +35,7 @@ const SECTION_SELECTORS = {
   quote: '[data-section="quote"]',
   dadjoke: '[data-section="dadJoke"]',
   morningidea: '[data-section="morningIdea"]',
+  smalltalk: '[data-section="smallTalk"]',
   funfact: '[data-section="funFact"]',
   history: '[data-section="history"]',
   quiz: '[data-section="quiz"]',
@@ -647,6 +650,29 @@ async function hydrateMorningIdea(sectionRoot, cfg, monthDay, isRefresh = false)
   }
 }
 
+async function hydrateSmallTalk(sectionRoot, cfg, monthDay, isRefresh = false) {
+  clearError(sectionRoot);
+  setSourceBadge(sectionRoot, cfg.source);
+  const { body } = getSectionEls(sectionRoot);
+  if (!body) return;
+  body.innerHTML = `<p class="muted" data-state="loading">Loading…</p>`;
+  try {
+    if (cfg.source === "api") {
+      body.innerHTML = `<p class="muted">No default API for small talk ideas. Switch <code>smallTalk</code> to <code>local</code> in content-sources.json.</p>`;
+      return;
+    }
+    const item = await loadLocalPickItem(
+      cfg,
+      monthDay,
+      isRefresh ? "random" : undefined
+    );
+    const text = item?.idea ?? item?.text ?? item?.content ?? "";
+    body.innerHTML = `<p>${decodeHtmlEntities(String(text))}</p>`;
+  } catch (e) {
+    showError(sectionRoot, e instanceof Error ? e.message : String(e));
+  }
+}
+
 async function hydrateFunFact(sectionRoot, cfg, monthDay, isRefresh = false) {
   clearError(sectionRoot);
   setSourceBadge(sectionRoot, cfg.source);
@@ -1027,6 +1053,14 @@ async function main() {
     await hydrateMorningIdea(morningRoot, sources.morningIdea, monthDay, false);
     wireRefresh(morningRoot, () =>
       hydrateMorningIdea(morningRoot, sources.morningIdea, monthDay, true)
+    );
+  }
+
+  const smallTalkRoot = document.querySelector('[data-section="smallTalk"]');
+  if (isSectionUrlEnabled(smallTalkRoot)) {
+    await hydrateSmallTalk(smallTalkRoot, sources.smallTalk, monthDay, false);
+    wireRefresh(smallTalkRoot, () =>
+      hydrateSmallTalk(smallTalkRoot, sources.smallTalk, monthDay, true)
     );
   }
 
