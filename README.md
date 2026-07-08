@@ -11,7 +11,7 @@ A **static** morning dashboard you can host on **GitHub Pages** (no build step).
 - **This day in history** — Wikimedia “on this day” or local keyed JSON.
 - **Quiz** — Open Trivia Database (rate-limited) or local questions.
 - **Theme** — System / light / dark (`localStorage`: `thisday-theme`), with a small inline script to limit flash.
-- **URL controls** — Hide any card, rename or hide title/tagline, bookmarkable presets; built-in help dialog (ⓘ next to theme).
+- **URL controls** — Hide any card, rename or hide title/tagline, optional header icon via URL, bookmarkable presets; built-in help dialog (ⓘ next to theme).
 - **Accessible** — Semantic sections, focus styles, `dialog` for help, aria labels on icon buttons.
 
 ## Repository layout
@@ -100,8 +100,9 @@ Parameters are **case-insensitive**; `_` in names is ignored. Combine with `&`.
 |---------|-----------|
 | `title`, `heading`, `h1`, `name` | Set main heading text, or **`off` / `hide` / `false` / …** to remove it |
 | `tagline`, `subtitle`, `desc`, `description` | Same for the line under the heading |
+| `icon`, `logo`, `headericon`, `favicon` | Image URL shown before the heading; omitted or empty means no icon |
 
-If **both** are hidden, the site header is hidden; the document title falls back to **`This Day — Morning dashboard`**.
+If **both** title and tagline are hidden and no icon URL is set, the site header is hidden; the document title falls back to **`This Day — Morning dashboard`**.
 
 ### Hide cards
 
@@ -116,6 +117,7 @@ If the **value** is an off-style token (`off`, `0`, `false`, `no`, `hide`, `disa
 | `f`, `fun`, `fact`, `funfact` | Fun fact |
 | `h`, `history` | History |
 | `z`, `quiz`, `trivia` | Quiz |
+| `star`, `timer`, `countdown` | Meeting countdown |
 | `today`, `hero`, `date` | “Today” hero date card |
 
 Examples: `?w=off`, `?title=off&tagline=Morning`, `?weather=off&quote=off`. The in-app **URL parameters** dialog lists the same and fills sample URLs for your current path.

@@ -251,9 +251,28 @@ html[data-theme="auto"] .top-actions__btn {
 .site-header__top {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 0.35rem 1rem;
+}
+
+.site-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.site-header__icon {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.site-header__icon[hidden] {
+  display: none;
 }
 
 @media (max-width: 32rem) {
@@ -558,6 +577,56 @@ html[data-theme="auto"] .top-actions__btn {
 
 .quiz__actions:empty {
   display: none;
+}
+
+.star__display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.75rem 0 0.25rem;
+  text-align: center;
+}
+
+.star__glyph {
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--muted);
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+.star__display--running .star__glyph {
+  color: var(--accent);
+}
+
+.star__display--done .star__glyph {
+  color: var(--accent);
+  transform: scale(1.25);
+}
+
+.star__time {
+  font-size: 1.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  min-height: 1.2em;
+}
+
+.star__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: center;
+  margin-top: 0.35rem;
+}
+
+.star__actions[hidden] {
+  display: none;
+}
+
+.star__actions .btn {
+  margin-top: 0.25rem;
+  min-width: 4.5rem;
 }
 
 .site-footer {

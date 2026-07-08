@@ -27,6 +27,7 @@ const URL_PARAM_ALIASES = {
   funfact: ["f", "fun", "fact", "funfact"],
   history: ["h", "history"],
   quiz: ["z", "quiz", "trivia"],
+  star: ["star", "timer", "countdown"],
   hero: ["today", "hero", "date"],
 };
 
@@ -39,6 +40,7 @@ const SECTION_SELECTORS = {
   funfact: '[data-section="funFact"]',
   history: '[data-section="history"]',
   quiz: '[data-section="quiz"]',
+  star: '[data-section="star"]',
   hero: "#today-date",
 };
 
@@ -92,11 +94,13 @@ function isSectionUrlEnabled(el) {
 
 const URL_HEADER_TITLE_KEYS = ["title", "heading", "h1", "name"];
 const URL_HEADER_TAGLINE_KEYS = ["tagline", "subtitle", "desc", "description"];
+const URL_HEADER_ICON_KEYS = ["icon", "logo", "headericon", "favicon"];
 const URL_PARK_KEYS = ["park", "themepark", "movie", "skin"];
 const URL_APPEARANCE_KEYS = ["appearance", "theme", "mode"];
 
 const URL_HEADER_TAGLINE_MAX = 200;
 const URL_HEADER_TITLE_MAX = 200;
+const URL_HEADER_ICON_MAX = 2000;
 const URL_COMBINED_DOC_TITLE_MAX = 120;
 const DEFAULT_DOC_TITLE = "This Day — Morning dashboard";
 
@@ -191,6 +195,74 @@ function resolveHeaderUrlField(paramMap, aliases, maxLen) {
   return { mode: "none" };
 }
 
+/**
+ * @returns {{ mode: 'none' } | { mode: 'hide' } | { mode: 'set', url: string }}
+ */
+function resolveHeaderIconUrl(paramMap) {
+  for (const a of URL_HEADER_ICON_KEYS) {
+    const key = normalizeUrlQueryKey(a);
+    if (!paramMap.has(key)) continue;
+    const raw = paramMap.get(key);
+    if (raw == null || String(raw).trim() === "") continue;
+    const trimmed = String(raw).trim();
+    if (isUrlParamOffValue(trimmed)) return { mode: "hide" };
+    const url = truncateDisplayText(trimmed, URL_HEADER_ICON_MAX);
+    try {
+      const parsed = new URL(url, window.location.href);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        return { mode: "none" };
+      }
+      return { mode: "set", url: parsed.href };
+    } catch {
+      return { mode: "none" };
+    }
+  }
+  return { mode: "none" };
+}
+
+function applyHeaderIcon(iconState) {
+  const iconEl = /** @type {HTMLImageElement | null} */ (
+    document.getElementById("site-icon")
+  );
+  const headerEl = /** @type {HTMLElement | null} */ (
+    document.querySelector(".site-header")
+  );
+  if (!iconEl) return;
+
+  iconEl.onload = null;
+  iconEl.onerror = null;
+
+  function syncHeaderVisibility() {
+    if (!headerEl) return;
+    const h1 = document.getElementById("site-heading");
+    const elTag = document.getElementById("site-tagline");
+    const hHid = h1?.hasAttribute("hidden");
+    const tHid = elTag?.hasAttribute("hidden");
+    const iconHid = iconEl.hasAttribute("hidden");
+    if (hHid && tHid && iconHid) headerEl.setAttribute("hidden", "");
+    else headerEl.removeAttribute("hidden");
+  }
+
+  if (iconState.mode !== "set") {
+    iconEl.removeAttribute("src");
+    iconEl.setAttribute("hidden", "");
+    return;
+  }
+
+  // Keep header layout ready while the image loads; hide only if it fails.
+  headerEl?.removeAttribute("hidden");
+  iconEl.onerror = () => {
+    iconEl.removeAttribute("src");
+    iconEl.setAttribute("hidden", "");
+    syncHeaderVisibility();
+  };
+  iconEl.onload = () => {
+    iconEl.removeAttribute("hidden");
+    syncHeaderVisibility();
+  };
+  iconEl.src = iconState.url;
+}
+
 function applyUrlHeaderOverrides() {
   const paramMap = getUrlSearchParamsNormalizedMap();
   const hState = resolveHeaderUrlField(
@@ -203,6 +275,7 @@ function applyUrlHeaderOverrides() {
     URL_HEADER_TAGLINE_KEYS,
     URL_HEADER_TAGLINE_MAX
   );
+  const iconState = resolveHeaderIconUrl(paramMap);
   const h1 = document.getElementById("site-heading");
   const elTag = document.getElementById("site-tagline");
   const headerEl = /** @type {HTMLElement | null} */ (
@@ -223,17 +296,21 @@ function applyUrlHeaderOverrides() {
       if (tState.mode === "set") elTag.textContent = tState.text;
     }
   }
+  applyHeaderIcon(iconState);
 
   if (headerEl) {
     const hHid = h1?.hasAttribute("hidden");
     const tHid = elTag?.hasAttribute("hidden");
-    if (hHid && tHid) headerEl.setAttribute("hidden", "");
+    // Icon is shown asynchronously after load; keep header if a URL was provided.
+    const iconPending = iconState.mode === "set";
+    if (hHid && tHid && !iconPending) headerEl.setAttribute("hidden", "");
     else headerEl.removeAttribute("hidden");
   }
 
   const anyUrlHeader =
     hState.mode !== "none" ||
-    tState.mode !== "none";
+    tState.mode !== "none" ||
+    iconState.mode !== "none";
   if (!anyUrlHeader) return;
 
   const headVisible = h1 && !h1.hasAttribute("hidden");
@@ -1013,6 +1090,78 @@ async function hydrateQuiz(sectionRoot, cfg, monthDay, isRefresh = false) {
   }
 }
 
+function formatCountdown(totalSeconds) {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function hydrateStar(sectionRoot) {
+  const timeEl = sectionRoot.querySelector("[data-star-time]");
+  const displayEl = sectionRoot.querySelector("[data-star-display]");
+  const actionsEl = sectionRoot.querySelector("[data-star-actions]");
+  const resetBtn = sectionRoot.querySelector("[data-star-reset]");
+  const minButtons = sectionRoot.querySelectorAll("[data-star-min]");
+  if (!timeEl || !displayEl) return;
+
+  /** @type {ReturnType<typeof setInterval> | null} */
+  let ticker = null;
+  let remaining = 0;
+
+  function setIdle() {
+    if (ticker) {
+      clearInterval(ticker);
+      ticker = null;
+    }
+    remaining = 0;
+    displayEl.classList.remove("star__display--running", "star__display--done");
+    timeEl.textContent = "Pick a time";
+    timeEl.classList.add("muted");
+    actionsEl?.removeAttribute("hidden");
+    resetBtn?.setAttribute("hidden", "");
+  }
+
+  function tick() {
+    remaining -= 1;
+    if (remaining <= 0) {
+      if (ticker) {
+        clearInterval(ticker);
+        ticker = null;
+      }
+      remaining = 0;
+      timeEl.textContent = "★ Done!";
+      timeEl.classList.remove("muted");
+      displayEl.classList.remove("star__display--running");
+      displayEl.classList.add("star__display--done");
+      return;
+    }
+    timeEl.textContent = formatCountdown(remaining);
+  }
+
+  function startCountdown(minutes) {
+    if (ticker) clearInterval(ticker);
+    remaining = minutes * 60;
+    displayEl.classList.remove("star__display--done");
+    displayEl.classList.add("star__display--running");
+    timeEl.classList.remove("muted");
+    timeEl.textContent = formatCountdown(remaining);
+    actionsEl?.setAttribute("hidden", "");
+    resetBtn?.removeAttribute("hidden");
+    ticker = setInterval(tick, 1000);
+  }
+
+  minButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const minutes = Number(btn.getAttribute("data-star-min"));
+      if (!Number.isFinite(minutes) || minutes <= 0) return;
+      startCountdown(minutes);
+    });
+  });
+
+  resetBtn?.addEventListener("click", () => setIdle());
+  setIdle();
+}
+
 function wireRefresh(root, fn) {
   const btn = root.querySelector("[data-refresh]");
   if (btn) btn.addEventListener("click", fn);
@@ -1085,6 +1234,7 @@ function initUrlHelpDialog() {
       "",
       `${base}?title=Good%20Morning&tagline=Rise%20and%20shine`,
       `${base}?Title=Monday&subtitle=Fresh%20start&w=off`,
+      `${base}?icon=https%3A%2F%2Fwww.google.com%2Fs2%2Ffavicons%3Fdomain%3Dgithub.com%26sz%3D64&title=GitHub%20Day`,
       "",
       `${base}?w=off`,
       `${base}?W=off`,
@@ -1202,6 +1352,9 @@ async function main() {
       hydrateQuiz(quizRoot, sources.quiz, monthDay, true)
     );
   }
+
+  const starRoot = document.querySelector('[data-section="star"]');
+  if (isSectionUrlEnabled(starRoot)) hydrateStar(starRoot);
 }
 
 main().catch((e) => console.error(e));
